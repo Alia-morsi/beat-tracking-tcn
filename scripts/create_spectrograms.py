@@ -12,9 +12,12 @@ Description: Process a folder of audio files to create a folder of mel
 
 import librosa
 import numpy as np
-import os
+import os, sys
 from argparse import ArgumentParser
 
+#temporary addition to get moving
+tcn_path = '/home/alia/Documents/beat_detection/beat-tracking-tcn'
+sys.path.append(tcn_path)
 from beat_tracking_tcn.utils.spectrograms import create_spectrograms
 
 
@@ -61,9 +64,16 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
 
-    create_spectrograms(
-        args.audio_directory,
-        args.output_directory,
-        args.fft_size,
-        args.hop_length,
-        args.n_mels)
+    import glob
+    #small modification to the code to accept folders with varying structures
+    wavs = glob.glob('{}/**/*.wav'.format(args.audio_directory), recursive=True)
+
+    print(args.output_directory)
+    for wav in wavs:
+        create_spectrograms(
+            args.audio_directory,
+            wav,
+            args.output_directory,
+            args.fft_size,
+            args.hop_length,
+            args.n_mels)

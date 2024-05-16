@@ -11,6 +11,7 @@ Description: Provides utilities for training a BeatNet model on a given
              dataset.
 """
 
+import torch
 
 def train(
         model,
@@ -181,6 +182,6 @@ def forward_batch(
         y = y.to(device=cuda_device)
 
     outputs = model(X)
-    loss = criterion(outputs, y)
+    loss = criterion(torch.squeeze(outputs), y)
 
     return outputs, loss

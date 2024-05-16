@@ -16,8 +16,9 @@ from torch.utils.data import random_split, DataLoader
 from torch.nn import BCELoss
 from torch.optim import Adam, lr_scheduler
 from torch import device, save
+import os
 
-from beat_tracking_tcn.datasets.ballroom_dataset import BallroomDataset
+from beat_tracking_tcn.datasets.asap_dataset import ASAPDataset
 from beat_tracking_tcn.models.beat_net import BeatNet
 from beat_tracking_tcn.utils.training import train, evaluate
 
@@ -94,7 +95,8 @@ def load_dataset(spectrogram_dir, label_dir, downbeats=False):
     Creates an instance of BallroomDataset from the given folders of
     spectrograms and labels.
     """    
-    dataset = BallroomDataset(spectrogram_dir, label_dir, downbeats=downbeats)
+
+    dataset = ASAPDataset(spectrogram_dir, label_dir, downbeats=downbeats)
     return dataset
 
 
@@ -126,6 +128,9 @@ def save_model(model, output_file):
     Dump the model state dict to disk using torch.save
     """
     state_dict = model.state_dict()
+    relpath = os.path.dirname(output_file)
+
+    os.makedirs(relpath, exist_ok=True)
     with open(output_file, 'wb') as f:
         save(state_dict, f)
 
@@ -145,7 +150,7 @@ def loss_stopped_falling(loss_history, epochs):
     """    
     return - np.sum(np.diff(loss_history[-epochs:])) < STOPPING_THRESHOLD
 
-
+#I wonder what in the train loop could just be left to pytorch lightning..
 def train_loop(
         model,
         train_loader,

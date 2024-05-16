@@ -23,7 +23,7 @@ def create_spectrogram(
     x, sr = librosa.load(file_path)
     hop_length_in_samples = int(np.floor(hop_length_in_seconds * sr))
     spec = librosa.feature.melspectrogram(
-        x,
+        y=x,
         sr=sr,
         n_fft=n_fft,
         hop_length=hop_length_in_samples,
@@ -34,23 +34,24 @@ def create_spectrogram(
 
 def create_spectrograms(
         audio_dir,
+        audio_file,
         spectrogram_dir,
         n_fft,
         hop_length_in_seconds,
         n_mels):
 
-    for file in os.scandir(audio_dir):
-        if os.path.splitext(file.name)[1] != '.wav':
-            continue
-
-        mag_spec = create_spectrogram(
-            file.path,
-            n_fft,
-            hop_length_in_seconds,
-            n_mels)
-        np.save(os.path.join(spectrogram_dir,
-                             os.path.splitext(file.name)[0]), mag_spec)
-        print('Saved spectrum for {}'.format(file.name))
+    mag_spec = create_spectrogram(
+        audio_file,
+        n_fft,
+        hop_length_in_seconds,
+        n_mels)
+    
+    #file root has to be in the path of audio file, bec accordingly we calculate the dir structure in out
+    #make check for above case
+    relpath = os.path.relpath(audio_file, start=audio_dir)
+    os.makedirs(os.path.join(spectrogram_dir, os.path.dirname(relpath)), exist_ok=True)
+    np.save(os.path.join(spectrogram_dir, os.path.splitext(relpath)[0]), mag_spec)
+    print('Saved spectrum for {}'.format(os.path.join(spectrogram_dir, os.path.splitext(relpath)[0])))
 
 def trim_spectrogram(spectrogram, trim_size):
     output = np.zeros(trim_size)
